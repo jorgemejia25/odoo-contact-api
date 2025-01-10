@@ -191,3 +191,50 @@ class ContactsRestApi(http.Controller):
             json.dumps({'success': 'Contact updated successfully'}),
             content_type='application/json'
         )
+
+    @http.route('/api/contacts/find_by_phone', type='http', auth='public', methods=['GET'], csrf=False)
+    def find_by_phone(self, phone):
+        """
+        Busca un contacto por número de teléfono.
+        
+        Parámetros:
+        - phone (str): Número de teléfono del contacto (obligatorio).
+        
+        Retorna:
+        - JSON con los detalles del contacto si se encuentra.
+        - JSON con un mensaje de error si no se encuentra el contacto.
+        """
+        if not phone:
+            return http.Response(
+                json.dumps({'error': 'Phone number is required'}),
+                content_type='application/json',
+                status=400
+            )
+        
+        # Normalizar el número de teléfono
+        phone = phone.strip().replace(' ', '').replace('+', '').replace('-', '')
+
+        # Buscar el contacto por número de teléfono
+        contact = request.env['res.partner'].sudo().search([('phone', '=', phone)], limit=1)
+
+        if not contact:
+            return http.Response(
+                json.dumps({'error': 'Contact not found'}),
+                content_type='application/json',
+                status=404
+            )
+
+        # Formatear los datos del contacto para devolverlos como JSON
+        contact_data = {
+            'id': contact.id,
+            'name': contact.name,
+            'email': contact.email,
+            'phone': contact.phone,
+            'company': contact.company_id.name if contact.company_id else None
+        }
+
+        return http.Response(
+            json.dumps(contact_data),
+            content_type='application/json',
+            status=200
+        )

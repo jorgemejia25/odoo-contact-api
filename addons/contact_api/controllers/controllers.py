@@ -86,8 +86,16 @@ class ContactsRestApi(http.Controller):
         # Agregar el comentario en el Chatter del contacto
         contact.message_post(body=comment)
 
+        contact_data = {
+            'id': contact.id,
+            'name': contact.name,
+            'email': contact.email,
+            'phone': contact.phone,
+            'company': contact.company_id.name if contact.company_id else None
+        }
+
         return http.Response(
-            json.dumps({'success': 'Comment added successfully'}),
+            json.dumps({'success': 'Comment added successfully', 'contact': contact_data}),
             content_type='application/json'
         )
         
@@ -128,6 +136,24 @@ class ContactsRestApi(http.Controller):
         
         # Eliminar guiones del número de teléfono
         contact_phone = contact_phone.replace('-', '')
+
+        contact = request.env['res.partner'].sudo().create({
+            'name': kwargs.get('name', 'Unknown'),
+            'email': kwargs.get('email', ''),
+            'phone': contact_phone,
+            'company_id': kwargs.get('company_id', False)
+        })
+        contact_data = {
+            'id': contact.id,
+            'name': contact.name,
+            'email': contact.email,
+            'phone': contact.phone,
+            'company': contact.company_id.name if contact.company_id else None
+        }
+        return http.Response(
+            json.dumps({'success': 'Contact created successfully', 'contact': contact_data}),
+            content_type='application/json'
+        )
         
     @http.route('/api/contact/update', type='http', auth='public', methods=['POST'], csrf=False)
     def update_contact(self, **kwargs):
@@ -174,8 +200,16 @@ class ContactsRestApi(http.Controller):
                 'company_id': kwargs.get('company_id', False)
             })
 
+            contact_data = {
+                'id': contact.id,
+                'name': contact.name,
+                'email': contact.email,
+                'phone': contact.phone,
+                'company': contact.company_id.name if contact.company_id else None
+            }
+
             return http.Response(
-                json.dumps({'success': 'Contact created successfully'}),
+                json.dumps({'success': 'Contact created successfully', 'contact': contact_data}),
                 content_type='application/json'
             )
 
@@ -187,8 +221,16 @@ class ContactsRestApi(http.Controller):
             'company_id': kwargs.get('company_id', contact.company_id.id)
         })
 
+        contact_data = {
+            'id': contact.id,
+            'name': contact.name,
+            'email': contact.email,
+            'phone': contact.phone,
+            'company': contact.company_id.name if contact.company_id else None
+        }
+
         return http.Response(
-            json.dumps({'success': 'Contact updated successfully'}),
+            json.dumps({'success': 'Contact updated successfully', 'contact': contact_data}),
             content_type='application/json'
         )
 

@@ -235,7 +235,7 @@ class ContactsRestApi(http.Controller):
         )
 
     @http.route('/api/contacts/find_by_phone', type='http', auth='public', methods=['GET'], csrf=False)
-    def find_by_phone(self, phone):
+    def find_by_phone(self, **kwargs):
         """
         Busca un contacto por número de teléfono.
         
@@ -246,6 +246,9 @@ class ContactsRestApi(http.Controller):
         - JSON con los detalles del contacto si se encuentra.
         - JSON con un mensaje de error si no se encuentra el contacto.
         """
+        
+        phone = kwargs.get('phone')
+        
         if not phone:
             return http.Response(
                 json.dumps({'error': 'Phone number is required'}),
